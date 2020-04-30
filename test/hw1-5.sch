@@ -1,0 +1,10 @@
+TASKS 3 3
+NAME    WCET    PERIOD
+Task1   35      75
+Task2   10      40
+Task3   5       20
+
+DURATION 100
+TIMESTEP 5
+
+ALGORITHM RMS
