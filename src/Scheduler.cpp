@@ -32,9 +32,23 @@ int Scheduler::compute_priority_for_task(Task& task)
 {
     switch (m_algorithm)
     {
-        case AlgorithmType::EDF: return -1 * task.time_until_deadline(m_simtime);
-        case AlgorithmType::RMS: return -1 * task.period;
-        case AlgorithmType::PBS: return task.fixed_priority;
+        case AlgorithmType::EDF: 
+            return -1 * task.time_until_deadline(m_simtime);
+
+        case AlgorithmType::RMS: 
+            return -1 * task.period;
+
+        case AlgorithmType::PBS: 
+            return task.fixed_priority;
+
+        case AlgorithmType::HVF: 
+            return task.value;
+
+        case AlgorithmType::HVDF:
+            return task.priority;
+
+        default: 
+            break;
     }
 
     return Task::IDLE_PRIORITY;
@@ -61,18 +75,59 @@ Task& Scheduler::determine_next_task()
     return Task::IDLE_TASK;
 }
 
+void Scheduler::preprocess_hvdf()
+{
+
+    m_logger.remarks() << "Density recalculations: " << std::endl;
+
+    for (Task& task : m_tasks) 
+    {
+        m_logger.remarks() << "    " << task.name << ": ";
+        if (task.deadline_missed_event_raised(m_simtime)) 
+        {
+            task.priority = Task::IDLE_PRIORITY;
+            m_logger.remarks() << "IDLE";
+        }
+        else 
+        {
+            task.priority = (100 * task.value) / task.time_until_deadline(m_simtime);
+            m_logger.remarks() << "100 * " << task.value 
+                               << " / "    << task.time_until_deadline(m_simtime)
+                               << " = "    << task.priority;
+        }
+
+        m_logger.remarks() << std::endl;
+    }
+}
+
+void Scheduler::preprocess_tasks()
+{
+    switch (m_algorithm)
+    {
+        case AlgorithmType::HVDF:
+            preprocess_hvdf();
+            break;
+
+        default: break;
+    }
+}
+
 void Scheduler::execute_one_step()
 {
     std::string rerelease_label = "Re-released tasks: ";
     std::string deadline_label = "Deadlines missed: ";
     std::string comma_separator = ", ";
 
+    bool preprocess_event_raised = false;
+
     for (Task& task : m_tasks)
     {
-        if (task.deadline_missed(m_simtime))
+        if (task.deadline_missed_event_raised(m_simtime))
         {
             m_logger.remarks() << deadline_label << task.name;
             deadline_label = comma_separator;
+
+            preprocess_event_raised = true;
         }
     }
 
@@ -85,12 +140,16 @@ void Scheduler::execute_one_step()
             task.rerelease();
             m_logger.remarks() << rerelease_label << task.name;
             rerelease_label = comma_separator;
+
+            preprocess_event_raised = true;
         }
     }
 
     if (rerelease_label == comma_separator) { m_logger.remarks() << std::endl; }
 
     m_logger.log_simtime(m_simtime);
+
+    if (preprocess_event_raised) { preprocess_tasks(); }
 
     Task& next_task = this->determine_next_task();
     m_logger.log_task_execution(next_task);

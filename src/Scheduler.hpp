@@ -30,6 +30,10 @@ class Scheduler
         void execute_one_step();
 
         int compute_priority_for_task(Task& task);
+
+        void preprocess_tasks();
+        void preprocess_hvdf();
+
         Task& determine_next_task();
 
     public:

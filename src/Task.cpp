@@ -58,6 +58,11 @@ void Task::service_for_timestep(int timestep)
     this->fulfillment += timestep;
 }
 
+bool Task::deadline_missed_event_raised(int simtime)
+{
+    return this->time_until_deadline(simtime) == 0 && this->needs_servicing();
+}
+
 bool Task::deadline_missed(int simtime)
 {
     return this->time_until_deadline(simtime) <= 0 && this->needs_servicing();

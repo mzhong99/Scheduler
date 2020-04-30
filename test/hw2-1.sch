@@ -1,0 +1,9 @@
+TASKS 4 2
+NAME    WCET    PERIOD  VALUE
+Task1   4       10      7
+Task2   12      17      4
+
+ALGORITHM   HVDF
+
+TIMESTEP 1
+DURATION 40

@@ -40,6 +40,7 @@ void Parser::parse_tasks()
             else if (key == "PERIOD"  ) { m_input_file >> task.period;         }
             else if (key == "DEADLINE") { m_input_file >> task.rel_deadline;   }
             else if (key == "PRIORITY") { m_input_file >> task.fixed_priority; }
+            else if (key == "VALUE"   ) { m_input_file >> task.value;          }
         }
         
         task.finalize();
@@ -50,10 +51,8 @@ void Parser::parse_tasks()
 void Parser::parse_algorithm()
 {
     std::string token; m_input_file >> token;
-
-    if      (token == "RMS") { m_scheduler_p->set_algorithm(AlgorithmType::RMS); }
-    else if (token == "EDF") { m_scheduler_p->set_algorithm(AlgorithmType::EDF); }
-    else if (token == "PBS") { m_scheduler_p->set_algorithm(AlgorithmType::PBS); }
+    AlgorithmType algo = string_to_algo(token);
+    m_scheduler_p->set_algorithm(algo);
 }
 
 void Parser::parse_duration()

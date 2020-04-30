@@ -20,6 +20,8 @@ struct Task
     int rel_deadline = 0;
     int abs_deadline = 0;
 
+    int value = 0;
+
     // higher is better
     int priority = 0;       
     int fixed_priority = 0;
@@ -37,6 +39,7 @@ struct Task
     int time_to_fulfillment();
     int time_until_deadline(int simtime);
 
+    bool deadline_missed_event_raised(int simtime);
     bool deadline_missed(int simtime);
     bool rerelease_is_ready(int simtime);
     void rerelease();
